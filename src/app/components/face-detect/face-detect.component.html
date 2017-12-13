@@ -1,4 +1,48 @@
-<input type="file" #fileInput placeholder="Upload file..." />
-<button type="button" (click)="upload()">Upload</button>
+<div class="container">
+  <div class="row">
+    <div class="col-sm-5">
+
+      <div class="alert alert-info" role="alert">
+        <h4 class="alert-heading">Upload from your PC</h4>
+
+        <form>
+          <div class="form-group">
+            <span>{{ fileLabel }}</span>
+            <label for="fileupload" class="btn btn-primary">
+              Upload file
+              <input id="fileupload" style="display: none" type="file" #fileInput placeholder="Upload file..." (change)="getUploadedImage()" />
+            </label>
+          </div>
+        </form>
+
+      </div><!-- END .alert -->
+
+    </div><!-- END .col-sm-5 -->
+
+    <div class="col-sm-2 mid-col">
+      OR
+    </div>
+
+    <div class="col-sm-5">
+
+      <div class="alert alert-info webcam-inititate" (click)="loadWebcamVideo()" 
+        role="alert" data-toggle="modal" data-target=".video-popup">
+        <h4>Upload from your webcam</h4>
+        <div class="webcam-img">
+          <img src="/assets/img/webcam.png" title="Upload webcam"/>
+        </div>
+      </div><!-- END .alert -- >
+        
+    </div><!-- END .col-sm-5 -->
+  </div>
+</div>
 
 <img src="{{ url }}" />
+
+<div class="modal fade video-popup" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+        <video id="v" width="500" height="380"></video>
+    </div>
+  </div>
+</div>
