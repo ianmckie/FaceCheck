@@ -1,9 +1,12 @@
 <div class="container">
   <div class="row">
+    <h2>Find Out About Your Face</h2>
+  
     <div class="col-sm-5">
 
+      <!-- File upload -->
       <div class="alert alert-info" role="alert">
-        <h4 class="alert-heading">Upload from your PC</h4>
+        <h4 class="alert-heading">Get an pic from your PC</h4>
 
         <form>
           <div class="form-group">
@@ -25,9 +28,10 @@
 
     <div class="col-sm-5">
 
+      <!-- Webcam initialisation -->
       <div class="alert alert-info webcam-inititate" (click)="loadWebcamVideo()" 
         role="alert" data-toggle="modal" data-target=".video-popup">
-        <h4>Upload from your webcam</h4>
+        <h4>Take a pic with your webcam</h4>
         <div class="webcam-img">
           <img src="/assets/img/webcam.png" title="Upload webcam"/>
         </div>
@@ -37,12 +41,38 @@
   </div>
 </div>
 
-<img src="{{ url }}" />
+<!-- Popup once image is captured -->
+<div class="modal fade image-popup" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+        <h3>Your results are ready</h3>
+        <img src="{{ url }}" /> 
+        <p>{{ results }}</p>  
+    </div>
+  </div>
+</div><!-- End .image-popup -->
 
+<!-- Popup once webcam is started -->
 <div class="modal fade video-popup" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
-        <video id="v" width="500" height="380"></video>
+
+      <!-- If webcam allowed show / else show error -->  
+      <div *ngIf="videoEnabled;then videoContainer else errorContainer"></div>
+
+        <ng-template #videoContainer>
+            <div class="video-wrapper loader-bg">
+              <video #videoElement id="v" width="500" height="380"></video>
+            </div>
+            <button id="capture" type="button" class="btn btn-primary"
+              data-toggle="modal" data-target=".image-popup">Take Photo</button>
+        </ng-template>
+
+        <ng-template #errorContainer>
+          <h3>{{ error.title }}</h3>
+          <p>{{ error.message }}</p>
+        </ng-template>
     </div>
+
   </div>
-</div>
+</div><!-- End .video-popup -->

@@ -4,6 +4,16 @@ import { HttpModule } from '@angular/http';
 
 import { DataService } from '../../services/data.service';
 
+// Declare jQuery
+declare var jquery:any;
+declare var $ :any;
+
+// Create error message type
+interface errorMessage {
+  title: string;
+  message: string;
+}
+
 @Component({
   selector: 'app-face-detect',
   templateUrl: './face-detect.component.html',
@@ -12,17 +22,25 @@ import { DataService } from '../../services/data.service';
 export class FaceDetectComponent implements OnInit {
 
   @ViewChild('fileInput') fileInput;
+  @ViewChild('videoElement') videoElement;
   
   url:string = ''
   fileLabel:string = '';
+  results:string = '';
 
   videoEl:HTMLVideoElement;
+  
+  videoEnabled:boolean = true;
 
+  error:errorMessage = {
+    title : 'Ooops',
+    message : 'Looks like somethin happened'
+  }
+
+ 
   constructor(private dataservice:DataService) {}
 
-  ngOnInit(){
-    //this.loadWebcamVideo();
-  }
+  ngOnInit(){}
 
 
   /*
@@ -31,16 +49,31 @@ export class FaceDetectComponent implements OnInit {
    */
 
   loadWebcamVideo(){
-    let videoEl = document.querySelector('video') ;
+    let videoEl =  this.videoElement.nativeElement,
+        capture = document.getElementById('capture');
     
     if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices.getUserMedia({ video: true })
       .then(stream => {
         videoEl.src = window.URL.createObjectURL(stream);
         videoEl.play();
-        videoEl.addEventListener('click', () => {
+        capture.addEventListener('click', () => {
             this.takeSnapshot(videoEl);
-        });
+            
+            // Hide video
+            $('.video-popup').modal('hide');
+        })
+      })
+      .catch(err => {
+        this.videoEnabled = false;
+        if(err.name === 'NotFoundError' || err.name === "NotAllowedError"){
+          this.error.title = 'Authorisation Issue';
+          this.error.message = 'You have to allow the site to use you webcam :P' 
+        }
+        else if(err.name === 'NotReadableError'){
+          this.error.title = 'No Webcam Found';
+          this.error.message = 'To use this feature you need to have access to a webcam' 
+        }
       });
     }
   }
@@ -51,8 +84,7 @@ export class FaceDetectComponent implements OnInit {
    */
 
   takeSnapshot(videoEl:HTMLVideoElement) {
-    var img = document.querySelector('img') || document.createElement('img');
-    var context, canvas;
+    let context, canvas;
 
     canvas = canvas || document.createElement('canvas');
     canvas.width = videoEl.width;
@@ -80,6 +112,7 @@ export class FaceDetectComponent implements OnInit {
       reader.onload = (event:any) => {
         // Contact Face++ API to detect face
         this.sendImage(event.target.result);
+        $('.image-popup').modal('show');
       }
   
       reader.readAsDataURL(fileBrowser.files[0]);
@@ -95,8 +128,22 @@ export class FaceDetectComponent implements OnInit {
 
   sendImage(url:string){
     this.url = url;
+
     this.dataservice.detectFace(url).subscribe((response) => {
-      console.log(response)
+      let face = response.faces[0].attributes,
+          gender = face.gender.value,
+          happiness = face.emotion.happiness || 0;
+          
+      if(response.faces.length === 0){
+        this.results = 'No face detected try another image';
+      }
+      else{
+        this.results = 'Faces detected '+response.faces.length+' '+'Your a '+gender;
+
+        if(happiness < 50 || happiness === 0){
+          this.results += 'You don\'t look happy, maybe you should try smiling';
+        }
+      }
     });  
   }
 }
